@@ -1,0 +1,17 @@
+Name:             frp
+Version:          0.0.0
+Description:      frp
+Synopsis:         frp
+Category:         Reactive
+License:          BSD3
+License-file:     LICENSE
+Author:           Sebastiaan Visser
+Maintainer:       sfvisser@cs.uu.nl
+Build-Type:       Simple
+Build-Depends:    base, monads-fd, transformers, network, salvia, salvia-extras, containers
+
+Executable:       frp
+GHC-Options:      -Wall -fno-warn-orphans
+HS-Source-Dirs:   src
+Main-is:          Main.hs
+
