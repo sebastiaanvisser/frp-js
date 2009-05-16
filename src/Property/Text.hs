@@ -2,9 +2,6 @@ module Property.Text where
 
 import Core.Val
 
-class Text a where
-  text :: a -> Val String
-
-
-
+class TextVal a where
+  textVal :: a -> Val Text
 

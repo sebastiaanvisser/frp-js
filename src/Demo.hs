@@ -1,13 +1,14 @@
 module Demo (demo) where
 
-import Control.Monad
-import Property.Geometry
-import Value.List
-import Value.Number
-import Prelude hiding (mod, max, min, reverse, sin)
-import Property.Text
-import Core.Val
 import Browser.Window
+import Control.Monad
+import Core.Val
+import Prelude hiding (mod, max, min, reverse, sin)
+import Property.Geometry
+import Property.Text
+import Value.List
+import Value.Boolean
+import Value.Number
 
 demo :: FRP ()
 demo =
@@ -26,10 +27,8 @@ demo =
          t4      = input "t4"
          t5      = input "t5"
          
-         subs    = [blue, orange, magenta, pink]
-
      -- Window title follows mouse cursor.
-     text Window <-: string (List [string (px Mouse), string (py Mouse)])
+     textVal Window <-: text (Comb [px Mouse, py Mouse])
 
      -- Background color depends on mouse state.
      color Body  <-:
@@ -38,11 +37,11 @@ demo =
          (con "white")
 
      -- Let yellow be sorted list of the five input fields.
-     let inputs = List $ map text [t1, t2, t3, t4, t5]
-     text yellow <-: string (sort inputs)
+     let inputs = Comb $ map textVal [t1, t2, t3, t4, t5]
+     textVal yellow <-: text (sort inputs)
 
      -- Set initial geomtry.
-     geom (0, 0, 40, 40) `mapM_` subs
+     geom (0, 0, 40,  40) `mapM_` boxes
      geom (0, 0, 400, 300) red
 
      -- Let red and yellow follow mouse.

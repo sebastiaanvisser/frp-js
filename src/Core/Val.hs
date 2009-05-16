@@ -1,15 +1,33 @@
-{-# LANGUAGE GADTs, KindSignatures, FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE
+    GADTs
+  , KindSignatures
+  , EmptyDataDecls
+  , FlexibleInstances
+  , FlexibleContexts
+  , MultiParamTypeClasses
+ #-}
 module Core.Val where
 
 import Control.Monad.Identity
 import Control.Monad.State
 
+-- Core types.
+
+data List a
+data Number
+data Boolean
+data Text
+
+-- Indexed FRP values.
+
 data Val :: * -> * where
   Conn  :: Val a -> Val a -> Val ()
   Prim  :: String -> Val a
   App   :: Val (a -> b) -> Val a -> Val b
-  List  :: [Val a] -> Val [a]
+  Comb  :: [Val a] -> Val (List a)
   Const :: String -> Val a
+
+type a :->: b = Val a -> Val b
 
 prim :: String -> Val a -> Val b
 prim f a = Prim f `App` a
@@ -43,20 +61,26 @@ infixl 2 <=:
 
 -- Primitive conversions.
 
-class Str a where
-  string :: Val a -> Val String
+class ToText a where
+  text :: Val a -> Val Text
+
+instance ToText Text where
+  text = prim "/*cast*/"
 
 -- Lift constant values into nodes.
 
-class Const a where
-  con :: a -> Val a
+class Show a => Const a b where
+  con :: a -> Val b
 
-instance Const [Char] where
+instance Const [Char] Text where
   con s = Const (show s)
 
-instance Const Int where
+instance Const Int Number where
   con i = Const (show i)
 
-instance Const Bool where
+instance Const Float Number where
+  con i = Const (show i)
+
+instance Const Bool Boolean where
   con b = Const (show b)
 

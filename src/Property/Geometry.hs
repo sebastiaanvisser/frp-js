@@ -1,7 +1,7 @@
 module Property.Geometry where
 
 import Core.Val
-import Value.Number
+import Value.Number ()
 
 class Point a where
   px :: a -> Val Number
@@ -27,10 +27,7 @@ corners a =
   , (right a, bottom a)
   ]
 
-geom
-  :: Geometry a
-  => (Val Number, Val Number, Val Number, Val Number)
-  -> a -> FRP ()
+geom :: Geometry a => (Val Number, Val Number, Val Number, Val Number) -> a -> FRP ()
 geom (a, b, c, d) o =
   do left   o <-: a
      top    o <-: b

@@ -2,15 +2,12 @@ module Value.List where
 
 import Core.Val
 
-instance Str Char where
-  string = prim "/*cast*/"
+instance ToText a => ToText (List a) where
+  text = prim "/*cast*/"
 
-instance Str a => Str [a] where
-  string = prim "/*cast*/"
-
-sort :: Val [b] -> Val [b]
+sort :: Val (List a) -> Val (List a)
 sort = prim "lift(Array.sort)"
 
-reverse :: Val [b] -> Val [b]
+reverse :: Val (List a) -> Val (List a)
 reverse = prim "lift(Array.reverse)"
 

@@ -2,12 +2,11 @@
 module Browser.Window where
 
 import Property.Geometry
-import Value.Number
 import Property.Text
 import Core.Val
 
 class Color a where
-  color :: a -> Val String
+  color :: a -> Val Text
 
 -- Mouse input.
 
@@ -17,15 +16,15 @@ instance Point Mouse where
   px _ = Prim "mouse.x"
   py _ = Prim "mouse.y"
 
-down :: Mouse -> Val Bool
+down :: Mouse -> Val Boolean
 down _ = Prim "mouse.down"
 
 -- Window title output.
 
 data Window = Window
 
-instance Text Window where
-  text _ = Prim "title"
+instance TextVal Window where
+  textVal _ = Prim "title"
 
 -- DOM elements.
 
@@ -52,16 +51,16 @@ instance Geometry (Element t) where
 instance Color (Element t) where
   color i = property i ".style" "backgroundColor"
 
-instance Text (Element t) where
-  text i = property i "" "innerHTML"
+instance TextVal (Element t) where
+  textVal i = property i "" "innerHTML"
 
 data Input
 
 input :: String -> Element Input
 input i = ById i
 
-instance Text (Element Input) where
-  text i = event i "" "value" "onkeyup"
+instance TextVal (Element Input) where
+  textVal i = event i "" "value" "onkeyup"
 
 
 time :: Val Number

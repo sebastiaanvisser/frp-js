@@ -1,14 +1,10 @@
-{-# LANGUAGE GADTs, FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 module Value.Number where
 
 import Core.Val
 
-data Number = Number
-
-instance Str Number where
-  string = prim "/*cast*/"
-
--- Numeric instances for integer nodes.
+instance ToText Number where
+  text = prim "/*cast*/"
 
 instance Num (Val Number) where
   (+) = prim2 "lift(function(a,b)a+b)"
@@ -33,11 +29,4 @@ min = prim2 "lift(Math.min)"
 
 sin :: Val Number -> Val Number
 sin = prim "lift(Math.sin)"
-
--- Booleans.
-instance Str Bool where
-  string = prim "/*cast*/"
-
-_if :: Val Bool -> Val a -> Val a -> Val a
-_if = prim3 "lift(function(c,i,e)c?i:e)"
 
