@@ -1,10 +1,7 @@
 h1 {
   background : yellow;
   position : absolute;
-  width : 100px;
-  height : 100px;;
-  left   : 10px;
-  top    : 10px;
+  width : 400px;
   z-index : 1;
 }
 

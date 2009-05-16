@@ -1,27 +1,35 @@
 module Geometry where
 
 import FRP
-import Integer ()
+import Integer
 
 class Point a where
-  px :: a -> Node Int Int
-  py :: a -> Node Int Int
+  px :: a -> Val Number
+  py :: a -> Val Number
 
 class Geometry a where
-  left   :: a -> Node Int Int
-  top    :: a -> Node Int Int
-  width  :: a -> Node Int Int
-  height :: a -> Node Int Int
+  left   :: a -> Val Number
+  top    :: a -> Val Number
+  width  :: a -> Val Number
+  height :: a -> Val Number
 
-bottom :: Geometry a => a -> Node Int Int
+bottom :: Geometry a => a -> Val Number
 bottom a = top a + height a
 
-right :: Geometry a => a -> Node Int Int
+right :: Geometry a => a -> Val Number
 right a = left a + width a
+
+corners :: Geometry a => a -> [(Val Number, Val Number)]
+corners a = 
+  [ (left  a, top    a)
+  , (right a, top    a)
+  , (left  a, bottom a)
+  , (right a, bottom a)
+  ]
 
 geom
   :: Geometry a
-  => (Node a Int, Node b Int, Node c Int, Node d Int)
+  => (Val Number, Val Number, Val Number, Val Number)
   -> a -> FRP ()
 geom (a, b, c, d) o =
   do left   o <-: a
@@ -29,9 +37,10 @@ geom (a, b, c, d) o =
      width  o <-: c
      height o <-: d
 
-attachBottom :: (Geometry a, Geometry b) => a -> b -> FRP ()
-attachBottom a b =
-  do width a <-: width  b
-     left  a <-: left   b
-     top   a <-: bottom b
+overlay :: (Geometry a, Geometry b) => a -> b -> Val Number -> FRP ()
+overlay a b c =
+  do left   a <-: left   b + c
+     top    a <-: top    b + c
+     width  a <-: width  b - c * 2
+     height a <-: height b - c * 2
 

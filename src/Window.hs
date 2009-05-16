@@ -4,9 +4,10 @@ module Window where
 import FRP
 import Geometry
 import Text
+import Integer
 
 class Color a where
-  color :: a -> Node String String
+  color :: a -> Val String
 
 -- Mouse input.
 
@@ -16,7 +17,7 @@ instance Point Mouse where
   px _ = Prim "mouse.x"
   py _ = Prim "mouse.y"
 
-down :: Mouse -> Node Bool Bool
+down :: Mouse -> Val Bool
 down _ = Prim "mouse.down"
 
 -- Window title output.
@@ -32,10 +33,10 @@ getElem :: Element t -> String
 getElem (ById i) = concat ["document.getElementById('", i, "')"]
 getElem Body     = "document.body"
 
-property :: Element t -> String -> String -> Node a b
+property :: Element t -> String -> String -> Val b
 property e s p = Prim $ concat ["property(", getElem e, s, ",'", p, "')"]
 
-event :: Element t -> String -> String -> String -> Node a b
+event :: Element t -> String -> String -> String -> Val a
 event e s p ev = Prim $ concat ["propEvent(", getElem e, s, ",'", p, "','", ev, "')"]
 
 data Element a =
@@ -61,4 +62,9 @@ input i = ById i
 
 instance Text (Element Input) where
   text i = event i "" "value" "onkeyup"
+
+
+time :: Val Number
+time = Prim "time"
+
 

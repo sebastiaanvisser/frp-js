@@ -1,8 +1,2 @@
 var time = frp()
-
-setInterval(
-  function ()
-  {
-    time.set(1 * new Date)
-  }, 15)
-
+setInterval(function () { time.set(Date.now()) }, 15)

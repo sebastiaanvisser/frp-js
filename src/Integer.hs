@@ -3,12 +3,14 @@ module Integer where
 
 import FRP
 
-instance Str Int where
+data Number = Number
+
+instance Str Number where
   string = prim "/*cast*/"
 
 -- Numeric instances for integer nodes.
 
-instance Num (Node a Int) where
+instance Num (Val Number) where
   (+) = prim2 "lift(function(a,b)a+b)"
   (*) = prim2 "lift(function(a,b)a*b)"
   (-) = prim2 "lift(function(a,b)a-b)"
@@ -16,23 +18,26 @@ instance Num (Node a Int) where
   signum = prim "lift(Math.sign)"
   fromInteger a = Const (show a)
 
-instance Fractional (Node a Int) where
-  (/) = prim2 "div"
+instance Fractional (Val Number) where
+  (/) = prim2 "lift(function(a,b)a/b)"
   fromRational r = Const (show r)
 
-mod :: Node a Int -> Node a Int -> Node a Int
+mod :: Val Number -> Val Number -> Val Number
 mod = prim2 "lift(function(a,b)a%b)"
 
-max :: Node a Int -> Node a Int -> Node a Int
+max :: Val Number -> Val Number -> Val Number
 max = prim2 "lift(Math.max)"
 
-min :: Node a Int -> Node a Int -> Node a Int
+min :: Val Number -> Val Number -> Val Number
 min = prim2 "lift(Math.min)"
+
+sin :: Val Number -> Val Number
+sin = prim "lift(Math.sin)"
 
 -- Booleans.
 instance Str Bool where
   string = prim "/*cast*/"
 
-_if :: Node a Bool -> Node a b -> Node a b -> Node a b
+_if :: Val Bool -> Val a -> Val a -> Val a
 _if = prim3 "lift(function(c,i,e)c?i:e)"
 

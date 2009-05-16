@@ -11,14 +11,14 @@ import qualified Data.Map as M
 compile :: FRP () -> String
 compile = compileNodes . runIdentity . flip execStateT []
 
-compileNodes :: [Node a b] -> String
+compileNodes :: [Val b] -> String
 compileNodes nodes = 
   let prims = sharedPrimitives nodes
       build = map (builder prims) (reverse nodes)
       decls = map (\(a, b) -> concat [b, " = ", a]) (M.toList prims)
   in intercalate "\n" (decls ++ [""] ++ build)
 
-sharedPrimitives :: [Node a b] -> Map String String
+sharedPrimitives :: [Val b] -> Map String String
 sharedPrimitives =
     M.fromList
   . flip zip (map (("_"++).show) [0::Int ..])
@@ -31,19 +31,15 @@ sharedPrimitives =
 konst :: String -> String
 konst k = "C(" ++ k ++ ")"
 
-collect :: Node a b -> Map String Int
-collect (Stop  a)   = collect a
-collect (Start a)   = collect a
-collect (Comp a b)  = M.unionWith (+) (collect a) (collect b)
+collect :: Val b -> Map String Int
+collect (Conn a b)  = M.unionWith (+) (collect a) (collect b)
 collect (Prim a)    = M.singleton a 1
 collect (List xs)   = M.unionsWith (+) (map collect xs)
 collect (App f s)   = M.unionWith (+) (collect f) (collect s)
 collect (Const c)   = M.singleton (konst c) 1
 
-builder :: Map String String -> Node a b -> String
-builder e (Stop  a)   = builder e a
-builder e (Start a)   = builder e a
-builder e (Comp a b)  = builder e a ++ "(" ++ builder e b ++ ")"
+builder :: Map String String -> Val b -> String
+builder e (Conn a b)  = builder e a ++ "(" ++ builder e b ++ ")"
 builder e (Prim a)    = maybe a id (M.lookup a e)
 builder e (List xs)   = "list(" ++ intercalate "," (map (builder e) xs) ++ ")"
 builder e p@(App _ _) = fun e p ++ "(" ++ intercalate "," (args e p) ++ ")"
@@ -51,11 +47,11 @@ builder e (Const c)   = let k = konst c in maybe k id (M.lookup k e)
 
 -- Flattening of curried function application.
 
-args :: Map String String -> Node a b -> [String]
+args :: Map String String -> Val b -> [String]
 args e (App f a) = args e f ++ [builder e a]
 args _ _         = []
 
-fun :: Map String String -> Node a b -> String
+fun :: Map String String -> Val b -> String
 fun e (App f _) = fun e f
 fun e a         = builder e a
 
