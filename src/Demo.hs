@@ -1,13 +1,13 @@
 module Demo (demo) where
 
 import Control.Monad
-import Geometry
-import List
-import Number
+import Property.Geometry
+import Value.List
+import Value.Number
 import Prelude hiding (mod, max, min, reverse, sin)
-import Text
-import Val
-import Window
+import Property.Text
+import Core.Val
+import Browser.Window
 
 demo :: FRP ()
 demo =

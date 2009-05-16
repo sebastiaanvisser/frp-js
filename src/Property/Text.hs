@@ -1,6 +1,6 @@
-module Text where
+module Property.Text where
 
-import Val
+import Core.Val
 
 class Text a where
   text :: a -> Val String

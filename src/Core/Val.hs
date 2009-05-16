@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs, KindSignatures, FlexibleInstances, FlexibleContexts #-}
-module Val where
+module Core.Val where
 
 import Control.Monad.Identity
 import Control.Monad.State

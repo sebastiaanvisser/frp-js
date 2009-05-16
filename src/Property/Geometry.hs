@@ -1,7 +1,7 @@
-module Geometry where
+module Property.Geometry where
 
-import Val
-import Number
+import Core.Val
+import Value.Number
 
 class Point a where
   px :: a -> Val Number

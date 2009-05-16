@@ -1,11 +1,11 @@
 {-# LANGUAGE GADTs, RankNTypes #-}
-module Compiler where
+module Core.Compiler where
 
 import Control.Monad.Identity
 import Control.Monad.State
 import Data.List
 import Data.Map (Map)
-import Val
+import Core.Val
 import qualified Data.Map as M
 
 compile :: FRP () -> String

@@ -1,10 +1,10 @@
 {-# LANGUAGE EmptyDataDecls, FlexibleInstances, OverlappingInstances, IncoherentInstances #-}
-module Window where
+module Browser.Window where
 
-import Geometry
-import Number
-import Text
-import Val
+import Property.Geometry
+import Value.Number
+import Property.Text
+import Core.Val
 
 class Color a where
   color :: a -> Val String

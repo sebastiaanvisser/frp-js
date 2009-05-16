@@ -1,8 +1,8 @@
 module Main where
 
-import Compiler
+import Core.Compiler
 import Demo
-import Val
+import Core.Val
 import Network.Salvia.Handler.ExtendedFileSystem
 import Network.Salvia.Handlers
 import Network.Salvia.Httpd

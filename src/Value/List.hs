@@ -1,6 +1,6 @@
-module List where
+module Value.List where
 
-import Val
+import Core.Val
 
 instance Str Char where
   string = prim "/*cast*/"

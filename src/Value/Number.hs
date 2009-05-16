@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs, FlexibleInstances, FlexibleContexts #-}
-module Number where
+module Value.Number where
 
-import Val
+import Core.Val
 
 data Number = Number
 
