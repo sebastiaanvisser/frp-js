@@ -1,6 +1,6 @@
 module List where
 
-import FRP
+import Val
 
 instance Str Char where
   string = prim "/*cast*/"

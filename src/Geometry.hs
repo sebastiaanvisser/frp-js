@@ -1,7 +1,7 @@
 module Geometry where
 
-import FRP
-import Integer
+import Val
+import Number
 
 class Point a where
   px :: a -> Val Number

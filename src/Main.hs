@@ -2,7 +2,7 @@ module Main where
 
 import Compiler
 import Demo
-import FRP
+import Val
 import Network.Salvia.Handler.ExtendedFileSystem
 import Network.Salvia.Handlers
 import Network.Salvia.Httpd

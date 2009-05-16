@@ -1,12 +1,10 @@
 {-# LANGUAGE GADTs, KindSignatures, FlexibleInstances, FlexibleContexts #-}
-module FRP where
+module Val where
 
 import Control.Monad.Identity
 import Control.Monad.State
 
 data Val :: * -> * where
---   Stop  :: Val a -> Val ()
---   Start :: Val a -> Val ()
   Conn  :: Val a -> Val a -> Val ()
   Prim  :: String -> Val a
   App   :: Val (a -> b) -> Val a -> Val b

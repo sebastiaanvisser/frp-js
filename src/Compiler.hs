@@ -5,7 +5,7 @@ import Control.Monad.Identity
 import Control.Monad.State
 import Data.List
 import Data.Map (Map)
-import FRP
+import Val
 import qualified Data.Map as M
 
 compile :: FRP () -> String

@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs, FlexibleInstances, FlexibleContexts #-}
-module Integer where
+module Number where
 
-import FRP
+import Val
 
 data Number = Number
 

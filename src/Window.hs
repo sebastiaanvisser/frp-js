@@ -1,10 +1,10 @@
 {-# LANGUAGE EmptyDataDecls, FlexibleInstances, OverlappingInstances, IncoherentInstances #-}
 module Window where
 
-import FRP
 import Geometry
+import Number
 import Text
-import Integer
+import Val
 
 class Color a where
   color :: a -> Val String
