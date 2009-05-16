@@ -1,4 +1,4 @@
-{-# LANGUAGE EmptyDataDecls, FlexibleInstances #-}
+{-# LANGUAGE EmptyDataDecls, FlexibleInstances, OverlappingInstances, IncoherentInstances #-}
 module Window where
 
 import FRP
@@ -50,6 +50,9 @@ instance Geometry (Element t) where
 
 instance Color (Element t) where
   color i = property i ".style" "backgroundColor"
+
+instance Text (Element t) where
+  text i = property i "" "innerHTML"
 
 data Input
 

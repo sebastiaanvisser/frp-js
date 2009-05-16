@@ -9,4 +9,8 @@ instance Str a => Str [a] where
   string = prim "/*cast*/"
 
 sort :: Node a [b] -> Node a [b]
-sort = prim "sort"
+sort = prim "lift(Array.sort)"
+
+reverse :: Node a [b] -> Node a [b]
+reverse = prim "lift(Array.reverse)"
+

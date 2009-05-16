@@ -1,6 +1,6 @@
 module Demo (demo) where
 
-import Prelude hiding (max, min)
+import Prelude hiding (max, min, reverse)
 import FRP
 import Geometry
 import Text
@@ -35,7 +35,11 @@ demo =
          (val "green")
          (val "orange")
 
-     text Window <-: string (sort (List (map text [t1, t2, t3, t4, t5])))
+     let inputs = List $ map text [t1, t2, t3, t4, t5]
+         sorted = sort inputs
+
+     text Window <-: string sorted
+     text h1     <-: string (reverse sorted)
 
      -- Set initial geomtry.
      geom (0, 0, 40, 40) `mapM_` subs
