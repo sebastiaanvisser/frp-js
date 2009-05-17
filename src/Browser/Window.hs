@@ -13,34 +13,34 @@ class Color a where
 data Mouse = Mouse
 
 instance Point Mouse where
-  px _ = Prim "mouse.x"
-  py _ = Prim "mouse.y"
+  px _ = Prim "mouseX"
+  py _ = Prim "mouseY"
 
 down :: Mouse -> Val Boolean
-down _ = Prim "mouse.down"
-
--- Window title output.
-
-data Window = Window
-
-instance TextVal Window where
-  textVal _ = Prim "title"
+down _ = Prim "mouseDown"
 
 -- DOM elements.
 
 getElem :: Element t -> String
 getElem (ById i) = concat ["document.getElementById('", i, "')"]
 getElem Body     = "document.body"
+getElem Document = "document"
+getElem Window   = "window"
 
 property :: Element t -> String -> String -> Val b
 property e s p = Prim $ concat ["property(", getElem e, s, ",'", p, "')"]
 
 event :: Element t -> String -> String -> String -> Val a
-event e s p ev = Prim $ concat ["propEvent(", getElem e, s, ",'", p, "','", ev, "')"]
+event e s p ev = Prim $ concat ["_event(", getElem e, s, ",'", p, "','", ev, "')"]
+
+
+
 
 data Element a =
     ById String
   | Body
+  | Document
+  | Window
 
 instance Geometry (Element t) where
   left   i = property i ".style" "left"
@@ -52,7 +52,12 @@ instance Color (Element t) where
   color i = property i ".style" "backgroundColor"
 
 instance TextVal (Element t) where
-  textVal i = property i "" "innerHTML"
+  textVal Document = property Document "" "title"
+  textVal i        = property i        "" "innerHTML"
+
+
+
+
 
 data Input
 
@@ -61,6 +66,9 @@ input i = ById i
 
 instance TextVal (Element Input) where
   textVal i = event i "" "value" "onkeyup"
+
+
+
 
 
 time :: Val Number

@@ -12,14 +12,14 @@ import Value.Number
 
 demo :: FRP ()
 demo =
-  do let red     = ById "first"
-         blue    = ById "second"
-         orange  = ById "third"
-         magenta = ById "fourth"
-         pink    = ById "fifth"
-         boxes   = [blue, orange, magenta, pink]
+  do let first   = ById "first"
+         second  = ById "second"
+         third   = ById "third"
+         fourth  = ById "fourth"
+         fifth   = ById "fifth"
+         boxes   = [second, third, fourth, fifth]
 
-         yellow  = ById "header"
+         header  = ById "header"
 
          t1      = input "t1"
          t2      = input "t2"
@@ -27,8 +27,8 @@ demo =
          t4      = input "t4"
          t5      = input "t5"
          
-     -- Window title follows mouse cursor.
-     textVal Window <-: text (Comb [px Mouse, py Mouse])
+     -- Document title follows mouse cursor.
+     textVal Document <-: text (Comb [px Mouse, py Mouse])
 
      -- Background color depends on mouse state.
      color Body  <-:
@@ -36,22 +36,27 @@ demo =
          (con "green")
          (con "white")
 
-     -- Let yellow be sorted list of the five input fields.
+     -- Let header be sorted list of the five input fields.
      let inputs = Comb $ map textVal [t1, t2, t3, t4, t5]
-     textVal yellow <-: text (sort inputs)
+     textVal header <-: text (sort inputs)
 
      -- Set initial geomtry.
      geom (0, 0, 40,  40) `mapM_` boxes
-     geom (0, 0, 400, 300) red
+     geom (0, 0, 400, 300) first
 
-     -- Let red and yellow follow mouse.
-     left red <-: 200 `max` (px Mouse - width  red / 2) `min` 600
-     top  red <-: 200 `max` (py Mouse - height red / 2) `min` 400
-     overlay yellow red 20
+     -- Let first and header follow mouse.
+     left first <-: 200 `max` (px Mouse - width  first / 2) `min` 600
+     top  first <-: 200 `max` (py Mouse - height first / 2) `min` 400
+     overlay header first 20
 
-     -- Let color boxes follow red.
+     -- Switch color when bouncing at left wall.
+     color header <-:
+      (map con ["yellow", "green", "blue", "orange"])
+      `alternate` (left first <=: 220)
+
+     -- Let color boxes follow first.
      mapM_ grow boxes
-     zipWithM_ attachCenter boxes (corners red)
+     zipWithM_ attachCenter boxes (corners first)
 
 -- Helpers.
 

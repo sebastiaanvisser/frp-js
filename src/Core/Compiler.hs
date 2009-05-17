@@ -27,9 +27,13 @@ sharedPrimitives =
   . M.unionsWith (+)
   . map collect 
   . reverse
+  . (Prim list:)
 
 konst :: String -> String
-konst k = "C(" ++ k ++ ")"
+konst k = "frp(" ++ k ++ ")"
+
+list :: String
+list = "lift(Array.concat)"
 
 collect :: Val b -> Map String Int
 collect (Conn a b)  = M.unionWith (+) (collect a) (collect b)
@@ -41,7 +45,7 @@ collect (Const c)   = M.singleton (konst c) 1
 builder :: Map String String -> Val b -> String
 builder e (Conn a b)  = builder e a ++ "(" ++ builder e b ++ ")"
 builder e (Prim a)    = maybe a id (M.lookup a e)
-builder e (Comb xs)   = "list(" ++ intercalate "," (map (builder e) xs) ++ ")"
+builder e (Comb xs)   = maybe "fail" id (M.lookup list e) ++ "(" ++ intercalate "," (map (builder e) xs) ++ ")"
 builder e p@(App _ _) = fun e p ++ "(" ++ intercalate "," (args e p) ++ ")"
 builder e (Const c)   = let k = konst c in maybe k id (M.lookup k e)
 

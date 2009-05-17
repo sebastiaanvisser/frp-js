@@ -50,14 +50,10 @@ instance Show (Val a) where
 
 type FRP a = StateT [Val ()] Identity a
 
-infixl 2 <-:
-infixl 2 <=:
+infixl 1 <-:
 
 (<-:) :: Val a -> Val a -> FRP ()
 (<-:) a b = modify ((a `Conn` b):)
-
-(<=:) :: Show a => Val a -> a -> FRP ()
-(<=:) a b = a <-: Const (show b)
 
 -- Primitive conversions.
 

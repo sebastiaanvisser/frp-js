@@ -30,3 +30,26 @@ min = prim2 "lift(Math.min)"
 sin :: Val Number -> Val Number
 sin = prim "lift(Math.sin)"
 
+
+
+(==:) :: Val a -> Val a -> Val Bool
+(==:) = prim2 "lift(function(a,b)a==b)"
+
+(!=:) :: Val a -> Val a -> Val Bool
+(!=:) = prim2 "lift(function(a,b)a!=b)"
+
+
+
+(>:) :: Val Number -> Val Number -> Val Bool
+(>:) = prim2 "lift(function(a,b)a>b)"
+
+(>=:) :: Val Number -> Val Number -> Val Bool
+(>=:) = prim2 "lift(function(a,b)a>=b)"
+
+(<:) :: Val Number -> Val Number -> Val Bool
+(<:) = prim2 "lift(function(a,b)a<b)"
+
+(<=:) :: Val Number -> Val Number -> Val Bool
+(<=:) = prim2 "lift(function(a,b)a<=b)"
+
+
