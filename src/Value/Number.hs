@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, TypeOperators #-}
 module Value.Number where
 
 import Core.Val
@@ -12,41 +12,41 @@ instance Num (Val Number) where
   (-) = prim2 "combine(function(a,b)a-b)"
   abs = prim "combine(Math.abs)"
   signum = prim "combine(Math.sign)"
-  fromInteger a = Const (show a)
+  fromInteger = Const . show
 
 instance Fractional (Val Number) where
   (/) = prim2 "combine(function(a,b)a/b)"
-  fromRational r = Const (show r)
+  fromRational = Const . show
 
-mod :: Val Number -> Val Number -> Val Number
+mod :: Number :->: Number :~>: Number
 mod = prim2 "combine(function(a,b)a%b)"
 
-max :: Val Number -> Val Number -> Val Number
+max :: Number :->: Number :~>: Number
 max = prim2 "combine(Math.max)"
 
-min :: Val Number -> Val Number -> Val Number
+min :: Number :->: Number :~>: Number
 min = prim2 "combine(Math.min)"
 
-sin :: Val Number -> Val Number
+sin :: Number :~>: Number
 sin = prim "combine(Math.sin)"
 
-cos :: Val Number -> Val Number
+cos :: Number :~>: Number
 cos = prim "combine(Math.cos)"
 
-sqrt :: Val Number -> Val Number
+sqrt :: Number :~>: Number
 sqrt = prim "combine(Math.sqrt)"
 
 infix  4 <:, <=:, >=:, >:
 
-(>:) :: Val Number -> Val Number -> Val Boolean
+(>:) :: Number :->: Number :~>: Boolean
 (>:) = prim2 "combine(function(a,b)a>b)"
 
-(>=:) :: Val Number -> Val Number -> Val Boolean
+(>=:) :: Number :->: Number :~>: Boolean
 (>=:) = prim2 "combine(function(a,b)a>=b)"
 
-(<:) :: Val Number -> Val Number -> Val Boolean
+(<:) :: Number :->: Number :~>: Boolean
 (<:) = prim2 "combine(function(a,b)a<b)"
 
-(<=:) :: Val Number -> Val Number -> Val Boolean
+(<=:) :: Number :->: Number :~>: Boolean
 (<=:) = prim2 "combine(function(a,b)a<=b)"
 

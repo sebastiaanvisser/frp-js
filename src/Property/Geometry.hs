@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, TypeOperators #-}
 module Property.Geometry where
 
 import Prelude hiding ((&&), (||), max, min, sqrt)
@@ -36,17 +36,17 @@ corners a =
 
 geom :: Geometry a => (Val Number, Val Number, Val Number, Val Number) -> a -> FRP ()
 geom (a, b, c, d) o =
-  do left   o <-: a
-     top    o <-: b
-     width  o <-: c
-     height o <-: d
+  do left   o <~ a
+     top    o <~ b
+     width  o <~ c
+     height o <~ d
 
-overlay :: (Geometry a, Geometry b) => a -> b -> Val Number -> FRP ()
+overlay :: (Geometry a, Geometry b) => a -> b -> Number :->: FRP ()
 overlay a b c =
-  do left   a <-: left   b + c
-     top    a <-: top    b + c
-     width  a <-: width  b - c * 2
-     height a <-: height b - c * 2
+  do left   a <~ left   b + c
+     top    a <~ top    b + c
+     width  a <~ width  b - c * 2
+     height a <~ height b - c * 2
 
 inside :: (Point a, Geometry b) => a -> b -> Val Boolean
 inside a b =
