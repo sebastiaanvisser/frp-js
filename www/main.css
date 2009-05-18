@@ -1,38 +1,5 @@
-h1 {
-  background : yellow;
-  position : absolute;
-  width : 400px;
-  z-index : 1;
-}
-
 div {
-  position : absolute;
-  left   : 10px;
-  top    : 10px;
-  width  : 100px;
-  height : 100px;
+  position   : absolute;
+  display    : none;
 }
 
-#first  { background : red;  }
-#second { background : blue; }
-#third  { background : orange; }
-#fourth { background : magenta; }
-#fifth  { background : pink; }
-
-ul {
-  list-style : none;
-  padding : 1em;
-}
-
-li {
-  background : white;
-  border : solid 4px red;
-  color : red;
-  font-family: sans-serif;
-  font-size : 20pt;
-}
-
-#sep { 
-  position : absolute;
-  width : 100%;
-}

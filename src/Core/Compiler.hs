@@ -28,26 +28,32 @@ sharedPrimitives =
   . map collect 
   . reverse
   . (Prim list:)
+  . (Prim comp:)
 
 konst :: String -> String
 konst k = "frp(" ++ k ++ ")"
 
 list :: String
-list = "lift(Array.concat)"
+list = "combine(Array.concat)"
+
+comp :: String
+comp = "function(a,b)function()a(b.apply(undefined, arguments))"
 
 collect :: Val b -> Map String Int
-collect (Conn a b)  = M.unionWith (+) (collect a) (collect b)
-collect (Prim a)    = M.singleton a 1
-collect (Comb xs)   = M.unionsWith (+) (map collect xs)
-collect (App f s)   = M.unionWith (+) (collect f) (collect s)
-collect (Const c)   = M.singleton (konst c) 1
+collect (App f s)  = M.unionWith  (+) (collect f) (collect s)
+collect (Comb xs)  = M.unionsWith (+) (map collect xs)
+collect (Comp a f) = M.unionWith  (+) (collect a) (collect f)
+collect (Conn a b) = M.unionWith  (+) (collect a) (collect b)
+collect (Const c)  = M.singleton (konst c) 1
+collect (Prim a)   = M.singleton a 1
 
 builder :: Map String String -> Val b -> String
-builder e (Conn a b)  = builder e a ++ "(" ++ builder e b ++ ")"
-builder e (Prim a)    = maybe a id (M.lookup a e)
-builder e (Comb xs)   = maybe "fail" id (M.lookup list e) ++ "(" ++ intercalate "," (map (builder e) xs) ++ ")"
 builder e p@(App _ _) = fun e p ++ "(" ++ intercalate "," (args e p) ++ ")"
+builder e (Comb xs)   = maybe "fail" id (M.lookup list e) ++ "(" ++ intercalate "," (map (builder e) xs) ++ ")"
+builder e (Comp a f)  = maybe "fail" id (M.lookup comp e) ++ "(" ++ builder e a ++ "," ++ builder e f ++ ")"
+builder e (Conn a b)  = builder e a ++ "(" ++ builder e b ++ ")"
 builder e (Const c)   = let k = konst c in maybe k id (M.lookup k e)
+builder e (Prim a)    = maybe a id (M.lookup a e)
 
 -- Flattening of curried function application.
 

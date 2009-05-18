@@ -14,31 +14,20 @@ function frp (init, act)
   x.set =
     function (v)
     {
+      if (v == x.v) return
       x.v = v
-      act && act.call(x, v)
+      if (act) act.call(x)
       x.reactors.map(function (r) { r.set(x.v) })
-      return x
     }
-  init && x.set(init)
+  init === undefined || x.set(init)
 
   return x
 }
 
-// Make a object property output.
-
-function property (obj, prop)
-  frp(obj[prop], function (v) obj[prop] = v )
-
-function _event (obj, prop, ev)
-{
-  var p = property(obj, prop)
-  obj[ev] = function () p.set(obj[prop])
-  return p
-}
-
 // Combine several inputs using a function.
+// :: ([a] -> b) -> [Val a] -> Val b
 
-function lift (f)
+function combine (f)
   function ()
   {
     var x = frp()
@@ -46,20 +35,19 @@ function lift (f)
     x.sub = []
 
     function make (x, i)
-      function (v)
-      {
-        x.sub[i] = v;
-        x.set(x.func.apply(this, x.sub))
-      }
+      function ()
+        x.set(x.func.apply(x, x.sub.map(function (s) s.v)))
 
     for (var i = 0; i < arguments.length; i++)
-      (x.sub[i] = frp(0, make(x, i)))(arguments[i])
-
+      (x.sub[i] = frp(undefined, make(x, i)))(arguments[i])
     return x
   }
 
+// Let changes on the input let the output alternate between the a's.
+// :: Val a -> Val [b] -> Val b
+
 function _switch (inp, a)
-  lift(
+  combine(
     function (b, c)
     {
       if (this.last !== b)
@@ -67,6 +55,18 @@ function _switch (inp, a)
       this.last = b
       return c && c[this.i % c.length]
     })(inp, a)
+
+// Make a object property output.
+
+function property (o, p)
+  frp(o[p], function (v) o[p] = this.v )
+
+function _event (o, p, ev)
+{
+  var pr = property(o, p)
+  o[ev] = function () pr.set(o[p])
+  return pr
+}
 
 // Mouse coordinates input.
 

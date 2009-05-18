@@ -1,11 +1,18 @@
+{-# LANGUAGE FlexibleInstances #-}
 module Property.Geometry where
 
+import Prelude hiding ((&&), (||), max, min, sqrt)
 import Core.Val
-import Value.Number ()
+import Value.Number
+import Value.Boolean
 
 class Point a where
   px :: a -> Val Number
   py :: a -> Val Number
+
+instance Point (Val Number, Val Number) where
+  px = fst
+  py = snd
 
 class Geometry a where
   left   :: a -> Val Number
@@ -40,4 +47,25 @@ overlay a b c =
      top    a <-: top    b + c
      width  a <-: width  b - c * 2
      height a <-: height b - c * 2
+
+inside :: (Point a, Geometry b) => a -> b -> Val Boolean
+inside a b =
+     px a >=: left   b
+  && px a <=: right  b
+  && py a >=: top    b
+  && py a <=: bottom b
+
+collapse :: (Geometry a, Geometry b) => a -> b -> Val Boolean
+collapse a b =
+  let x = (left   a `max` left   b)
+      y = (top    a `max` top    b)
+      w = (right  a `min` right  b) - x 
+      h = (bottom a `min` bottom b) - y 
+  in x >: 0 && y >: 0 && w >: 0 && h >: 0
+
+distance :: (Point a, Point b) => a -> b -> Val Number
+distance a b = sqrt
+  ( (px a - px b) * (px a - px b)
+  + (py a - py b) * (py a - py b)
+  )
 

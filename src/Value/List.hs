@@ -6,14 +6,17 @@ instance ToText a => ToText (List a) where
   text = prim "/*cast*/"
 
 sort :: Val (List a) -> Val (List a)
-sort = prim "lift(Array.sort)"
+sort = prim "combine(Array.sort)"
 
 reverse :: Val (List a) -> Val (List a)
-reverse = prim "lift(Array.reverse)"
+reverse = prim "combine(Array.reverse)"
 
-switch :: [Val a] -> Val b -> Val a
-switch xs a = Prim "_switch" `App` a `App` Comb xs
+switch ::  Val b -> [Val a] -> Val a
+switch a xs = Prim "_switch" `App` a `App` Comb xs
 
-alternate :: [Val a] -> Val b -> Val a
-alternate xs a = concat (zipWith (\x y -> [x, y]) xs xs) `switch` a
+alternate :: Val b -> [Val a] -> Val a
+alternate a xs = a `switch` concat (zipWith (\x y -> [x, y]) xs xs)
+
+on :: Val b -> Val Boolean
+on a = a `alternate` [con True, con False]
 

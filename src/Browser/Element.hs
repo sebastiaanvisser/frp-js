@@ -1,25 +1,10 @@
-{-# LANGUAGE EmptyDataDecls, FlexibleInstances, OverlappingInstances, IncoherentInstances #-}
-module Browser.Window where
+{-# LANGUAGE FlexibleInstances, OverlappingInstances, IncoherentInstances #-}
+module Browser.Element where
 
+import Property.Color
 import Property.Geometry
 import Property.Text
 import Core.Val
-
-class Color a where
-  color :: a -> Val Text
-
--- Mouse input.
-
-data Mouse = Mouse
-
-instance Point Mouse where
-  px _ = Prim "mouseX"
-  py _ = Prim "mouseY"
-
-down :: Mouse -> Val Boolean
-down _ = Prim "mouseDown"
-
--- DOM elements.
 
 getElem :: Element t -> String
 getElem (ById i) = concat ["document.getElementById('", i, "')"]
@@ -33,7 +18,7 @@ property e s p = Prim $ concat ["property(", getElem e, s, ",'", p, "')"]
 event :: Element t -> String -> String -> String -> Val a
 event e s p ev = Prim $ concat ["_event(", getElem e, s, ",'", p, "','", ev, "')"]
 
-
+-- DOM elements.
 
 
 data Element a =
@@ -51,6 +36,10 @@ instance Geometry (Element t) where
 instance Color (Element t) where
   color i = property i ".style" "backgroundColor"
 
+instance Visible (Element t) where
+  visible i = property i ".style" "display"
+       `Comp` Prim "combine(function(a)a?'block':'hidden')"
+
 instance TextVal (Element t) where
   textVal Document = property Document "" "title"
   textVal i        = property i        "" "innerHTML"
@@ -59,7 +48,7 @@ instance TextVal (Element t) where
 
 
 
-data Input
+data Input = Input
 
 input :: String -> Element Input
 input i = ById i
@@ -69,9 +58,5 @@ instance TextVal (Element Input) where
 
 
 
-
-
-time :: Val Number
-time = Prim "time"
 
 

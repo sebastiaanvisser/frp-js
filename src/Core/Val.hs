@@ -5,6 +5,7 @@
   , FlexibleInstances
   , FlexibleContexts
   , MultiParamTypeClasses
+  , FunctionalDependencies
  #-}
 module Core.Val where
 
@@ -21,11 +22,12 @@ data Text
 -- Indexed FRP values.
 
 data Val :: * -> * where
-  Conn  :: Val a -> Val a -> Val ()
-  Prim  :: String -> Val a
   App   :: Val (a -> b) -> Val a -> Val b
   Comb  :: [Val a] -> Val (List a)
+  Comp  :: Val a -> Val (a -> b) -> Val b
+  Conn  :: Val a -> Val a -> Val ()
   Const :: String -> Val a
+  Prim  :: String -> Val a
 
 type a :->: b = Val a -> Val b
 
@@ -65,7 +67,7 @@ instance ToText Text where
 
 -- Lift constant values into nodes.
 
-class Show a => Const a b where
+class Show a => Const a b | a -> b where
   con :: a -> Val b
 
 instance Const [Char] Text where
@@ -78,5 +80,6 @@ instance Const Float Number where
   con i = Const (show i)
 
 instance Const Bool Boolean where
-  con b = Const (show b)
+  con False = Const "false"
+  con True  = Const "true"
 

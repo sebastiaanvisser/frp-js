@@ -1,73 +1,57 @@
 module Demo (demo) where
 
-import Browser.Window
-import Control.Monad
+import Browser.Element
+import Browser.Time
+import Browser.Mouse
 import Core.Val
-import Prelude hiding (mod, max, min, reverse, sin)
+import Prelude hiding (mod, max, min, reverse, sin, (&&), (||), not, sin, cos)
+import Property.Color
 import Property.Geometry
 import Property.Text
-import Value.List
 import Value.Boolean
 import Value.Number
 
 demo :: FRP ()
 demo =
-  do let first   = ById "first"
-         second  = ById "second"
-         third   = ById "third"
-         fourth  = ById "fourth"
-         fifth   = ById "fifth"
-         boxes   = [second, third, fourth, fifth]
+  do let target = ById "a"
+         boxes = map (ById . ('d':) . show) [0..(9::Int)]
 
-         header  = ById "header"
+     -- The orange target dot is always following the mouse cursor, but gives
+     -- some space to links in the top of the document.
+     geom (400, 400, 40, 40) target
+     visible target <-: con True
+     color target   <-: con "orange"
+     left target    <-: (px Mouse - width  target / 2)
+     top  target    <-: (py Mouse - height target / 2) `max` 80
 
-         t1      = input "t1"
-         t2      = input "t2"
-         t3      = input "t3"
-         t4      = input "t4"
-         t5      = input "t5"
-         
-     -- Document title follows mouse cursor.
-     textVal Document <-: text (Comb [px Mouse, py Mouse])
+     -- Window title is the distance between mouse curos and top-left part of
+     -- the document.
+     let orig = (0::Val Number, 0::Val Number)
+     textVal Document <-: text (distance Mouse orig)
 
-     -- Background color depends on mouse state.
-     color Body  <-:
-       _if (down Mouse)
-         (con "green")
-         (con "white")
+     -- Render some gray boxes in a circle, let the all pulse repetitively.
+     -- When they come in contact with the target they grow and become red!
+     flip mapM_ (zip boxes [0..]) $ \(b, i) ->
+       do let j = con (i::Int)
+              x = 400 + 250 * cos j
+              y = 400 + 250 * sin j
+              c = collapse target b
+          visible b   <-: con True
+          left target <-: x
+          top  target <-: y
+          color b     <-: _if c (con "red") (con "silver")
+          pulse b x y (_if c 120 40) 20 200
 
-     -- Let header be sorted list of the five input fields.
-     let inputs = Comb $ map textVal [t1, t2, t3, t4, t5]
-     textVal header <-: text (sort inputs)
-
-     -- Set initial geomtry.
-     geom (0, 0, 40,  40) `mapM_` boxes
-     geom (0, 0, 400, 300) first
-
-     -- Let first and header follow mouse.
-     left first <-: 200 `max` (px Mouse - width  first / 2) `min` 600
-     top  first <-: 200 `max` (py Mouse - height first / 2) `min` 400
-     overlay header first 20
-
-     -- Switch color when bouncing at left wall.
-     color header <-:
-      (map con ["yellow", "green", "blue", "orange"])
-      `alternate` (left first <=: 220)
-
-     -- Let color boxes follow first.
-     mapM_ grow boxes
-     zipWithM_ attachCenter boxes (corners first)
-
--- Helpers.
-
-grow :: Geometry a => a -> FRP ()
-grow a =
-  do let s = 60 + 40 * sin (time / 200)
+pulse
+  :: Geometry a
+  => a
+  -> Val Number -> Val Number -> Val Number
+  -> Val Number -> Val Number -> FRP ()
+pulse a x y f t ss =
+  do let s = f + t * (sin (time / ss))
      width  a <-: s
      height a <-: s
+     left   a <-: x - width  a / 2
+     top    a <-: y - height a / 2
 
-attachCenter :: Geometry a => a -> (Val Number, Val Number) -> FRP ()
-attachCenter a (x, y) =
-  do left a <-: x - width  a / 2
-     top  a <-: y - height a / 2
 
