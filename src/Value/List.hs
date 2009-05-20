@@ -4,7 +4,7 @@ module Value.List where
 import Core.Val
 
 instance ToText a => ToText (List a) where
-  text = prim "$(function(x)x)"
+  text = prim "$(function(x){return x})"
 
 sort :: List a :~>: (List a)
 sort = prim "$(Array.sort)"

@@ -1,5 +1,6 @@
 div {
   position   : absolute;
   display    : none;
+  opacity    : 0.6;
 }
 

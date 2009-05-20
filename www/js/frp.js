@@ -24,49 +24,66 @@ function frp (init, act)
   return x
 }
 
-function C(a,b)function()a(b.apply(undefined, arguments))
+function C(a,b)
+{
+  return function() 
+  {
+    return a(b.apply(undefined, arguments))
+  }
+}
 
 // Combine several inputs using a function.
 // :: ([a] -> b) -> [Val a] -> Val b
 
 function $ (f)
-  function ()
+{
+  return function ()
   {
     var x = frp()
     x.func = f
     x.sub = []
 
     function make (x, i)
-      function ()
-        x.set(x.func.apply(x, x.sub.map(function (s) s.v)))
+    {
+      return function ()
+      {
+        return x.set(x.func.apply(x, x.sub.map(function (s) {return s.v})))
+      }
+     }
 
     for (var i = 0; i < arguments.length; i++)
       (x.sub[i] = frp(undefined, make(x, i)))(arguments[i])
     return x
   }
+}
 
 // Let changes on the input let the output alternate between the a's.
 // :: Val a -> Val [b] -> Val b
 
 function _switch (inp, a)
-  $(
+{
+  return $(
     function (b, c)
     {
       if (this.last !== b)
         (this.i = this.i ? this.i + 1 : 1)
       this.last = b
       return c && c[this.i % c.length]
-    })(inp, a)
+    }
+  )(inp, a)
+}
 
 // Make a object property output.
 
 function property (o, p)
-  frp(o[p], function (v) o[p] = this.v )
+{
+  return frp(o[p], function (v) { return o[p] = this.v } )
+}
 
 function _event (o, p, ev)
 {
   var pr = property(o, p)
-  o[ev] = function () pr.set(o[p])
+  o[ev] = function () { return pr.set(o[p]) }
   return pr
 }
 
@@ -84,11 +101,11 @@ document.onmousemove =
 // Mouse status input.
 
 mouseDown = frp(false)
-document.onmousedown = function (e) mouseDown.set(true)
-document.onmouseup   = function (e) mouseDown.set(false)
+document.onmousedown = function (e) { return mouseDown.set(true)  }
+document.onmouseup   = function (e) { return mouseDown.set(false) }
 
 // Time input.
 
 time = frp()
-setInterval(function () time.set(Date.now()), 50)
+setInterval(function () { time.set(1 * new Date) }, 50)
 

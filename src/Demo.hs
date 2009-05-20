@@ -16,7 +16,7 @@ import Value.Number
 demo :: FRP ()
 demo =
   do let target = ById "a"
-         boxes = map (ById . ('d':) . show) [0..(9::Int)]
+         boxes = map (ById . ('d':) . show) [0..(19::Int)]
 
      -- The orange target dot is always following the mouse cursor, but gives
      -- some space to links in the top of the document.
@@ -43,7 +43,8 @@ demo =
           left target <~ x
           top  target <~ y
           color b     <~ _if c (con "red") (con "silver")
-          pulse b x y (_if c 120 40) 20 200
+--           pulse b x y (_if c 120 40) 20 200
+          pulse b x y (20 + distance Mouse (x, y) / 3) 20 200
 
 pulse
    ::  Geometry a

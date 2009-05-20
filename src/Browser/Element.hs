@@ -38,7 +38,7 @@ instance Color (Element t) where
 
 instance Visible (Element t) where
   visible i = property i ".style" "display"
-       `Comp` Prim "$(function(a)a?'block':'hidden')"
+       `Comp` Prim "$(function(a){return a?'block':'hidden'})"
 
 instance TextVal (Element t) where
   textVal Document = property Document "" "title"
