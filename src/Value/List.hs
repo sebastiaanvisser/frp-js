@@ -4,13 +4,13 @@ module Value.List where
 import Core.Val
 
 instance ToText a => ToText (List a) where
-  text = prim "/*cast*/"
+  text = prim "$(function(x)x)"
 
 sort :: List a :~>: (List a)
-sort = prim "combine(Array.sort)"
+sort = prim "$(Array.sort)"
 
 reverse :: List a :~>: List a
-reverse = prim "combine(Array.reverse)"
+reverse = prim "$(Array.reverse)"
 
 switch :: Val b -> [Val a] -> Val a
 switch a xs = Prim "_switch" `App` a `App` Comb xs

@@ -38,6 +38,7 @@ demo =
               x = 400 + 250 * cos j
               y = 400 + 250 * sin j
               c = collapse target b
+         
           visible b   <~ con True
           left target <~ x
           top  target <~ y
@@ -45,15 +46,15 @@ demo =
           pulse b x y (_if c 120 40) 20 200
 
 pulse
-  :: Geometry a
-  => a
+   ::  Geometry a
+   =>  a
    ->  Number :->: Number :->: Number
   :->: Number :->: Number :->: FRP ()
 pulse a x y f t ss =
   do let s = f + t * (sin (time / ss))
-     width  a <~ s
-     height a <~ s
      left   a <~ x - width  a / 2
      top    a <~ y - height a / 2
+     width  a <~ s
+     height a <~ s
 
 

@@ -4,49 +4,49 @@ module Value.Number where
 import Core.Val
 
 instance ToText Number where
-  text = prim "/*cast*/"
+  text = prim "$(function(x)x)"
 
 instance Num (Val Number) where
-  (+) = prim2 "combine(function(a,b)a+b)"
-  (*) = prim2 "combine(function(a,b)a*b)"
-  (-) = prim2 "combine(function(a,b)a-b)"
-  abs = prim "combine(Math.abs)"
-  signum = prim "combine(Math.sign)"
+  (+) = prim2 "$(function(a,b)a+b)"
+  (*) = prim2 "$(function(a,b)a*b)"
+  (-) = prim2 "$(function(a,b)a-b)"
+  abs = prim "$(Math.abs)"
+  signum = prim "$(Math.sign)"
   fromInteger = Const . show
 
 instance Fractional (Val Number) where
-  (/) = prim2 "combine(function(a,b)a/b)"
+  (/) = prim2 "$(function(a,b)a/b)"
   fromRational = Const . show
 
 mod :: Number :->: Number :~>: Number
-mod = prim2 "combine(function(a,b)a%b)"
+mod = prim2 "$(function(a,b)a%b)"
 
 max :: Number :->: Number :~>: Number
-max = prim2 "combine(Math.max)"
+max = prim2 "$(Math.max)"
 
 min :: Number :->: Number :~>: Number
-min = prim2 "combine(Math.min)"
+min = prim2 "$(Math.min)"
 
 sin :: Number :~>: Number
-sin = prim "combine(Math.sin)"
+sin = prim "$(Math.sin)"
 
 cos :: Number :~>: Number
-cos = prim "combine(Math.cos)"
+cos = prim "$(Math.cos)"
 
 sqrt :: Number :~>: Number
-sqrt = prim "combine(Math.sqrt)"
+sqrt = prim "$(Math.sqrt)"
 
 infix  4 <:, <=:, >=:, >:
 
 (>:) :: Number :->: Number :~>: Boolean
-(>:) = prim2 "combine(function(a,b)a>b)"
+(>:) = prim2 "$(function(a,b)a>b)"
 
 (>=:) :: Number :->: Number :~>: Boolean
-(>=:) = prim2 "combine(function(a,b)a>=b)"
+(>=:) = prim2 "$(function(a,b)a>=b)"
 
 (<:) :: Number :->: Number :~>: Boolean
-(<:) = prim2 "combine(function(a,b)a<b)"
+(<:) = prim2 "$(function(a,b)a<b)"
 
 (<=:) :: Number :->: Number :~>: Boolean
-(<=:) = prim2 "combine(function(a,b)a<=b)"
+(<=:) = prim2 "$(function(a,b)a<=b)"
 

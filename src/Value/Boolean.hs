@@ -7,27 +7,27 @@ instance ToText Boolean where
   text = prim "/*cast*/"
 
 _if :: Boolean :->: a :->: a :~>: a
-_if = prim3 "combine(function(c,i,e)c?i:e)"
+_if = prim3 "$(function(c,i,e)c?i:e)"
 
 while :: a :->: Boolean :~>: a
-while = prim2 "combine(function(i,c)c?i:this.v)"
+while = prim2 "$(function(i,c)c?i:this.v)"
 
 infix  4  ==:, !=:
 infixr 3  &&
 infixr 2  ||
 
 not :: Boolean :~>: Boolean
-not = prim "combine(function(a)!a)"
+not = prim "$(function(a)!a)"
 
 (==:) :: a :->: a :~>: Boolean
-(==:) = prim2 "combine(function(a,b)a==b)"
+(==:) = prim2 "$(function(a,b)a==b)"
 
 (!=:) :: a :->: a :~>: Boolean
-(!=:) = prim2 "combine(function(a,b)a!=b)"
+(!=:) = prim2 "$(function(a,b)a!=b)"
 
 (&&) :: Boolean :->: Boolean :~>: Boolean
-(&&) = prim2 "combine(function(a,b)a&&b)"
+(&&) = prim2 "$(function(a,b)a&&b)"
 
 (||) :: Boolean :->: Boolean :~>: Boolean
-(||) = prim2 "combine(function(a,b)a||b)"
+(||) = prim2 "$(function(a,b)a||b)"
 

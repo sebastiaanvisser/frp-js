@@ -24,10 +24,12 @@ function frp (init, act)
   return x
 }
 
+function C(a,b)function()a(b.apply(undefined, arguments))
+
 // Combine several inputs using a function.
 // :: ([a] -> b) -> [Val a] -> Val b
 
-function combine (f)
+function $ (f)
   function ()
   {
     var x = frp()
@@ -47,7 +49,7 @@ function combine (f)
 // :: Val a -> Val [b] -> Val b
 
 function _switch (inp, a)
-  combine(
+  $(
     function (b, c)
     {
       if (this.last !== b)
@@ -88,5 +90,5 @@ document.onmouseup   = function (e) mouseDown.set(false)
 // Time input.
 
 time = frp()
-setInterval(function () time.set(Date.now()), 15)
+setInterval(function () time.set(Date.now()), 50)
 

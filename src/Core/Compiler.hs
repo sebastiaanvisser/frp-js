@@ -1,67 +1,94 @@
 {-# LANGUAGE GADTs, RankNTypes #-}
 module Core.Compiler where
 
+{- TODO: cleanup a bit. -}
+
+import Control.Applicative hiding (Const)
 import Control.Monad.Identity
 import Control.Monad.State
+import Core.Val
 import Data.List
 import Data.Map (Map)
-import Core.Val
+import Data.Ord
 import qualified Data.Map as M
 
 compile :: FRP () -> String
-compile = compileNodes . runIdentity . flip execStateT []
+compile = runCompiler . runIdentity . flip execStateT []
 
-compileNodes :: [Val b] -> String
-compileNodes nodes = 
-  let prims = sharedPrimitives nodes
-      build = map (builder prims) (reverse nodes)
-      decls = map (\(a, b) -> concat [b, " = ", a]) (M.toList prims)
-  in intercalate "\n" (decls ++ [""] ++ build)
+runCompiler :: [Val a] -> String
+runCompiler vs = 
+    intercalate "\n"
+  . filter (not . null)
+  . map (showRule rev)
+  . sortBy (comparing (fst . snd))
+  . M.toList $ values
+  where 
+    swp (l, (i, n)) = (i, (l, n))
+    rev = M.fromList . map swp . M.toList $ values
+    values = snd . fst . runIdentity . flip runStateT 0
+           . flip runStateT M.empty . mapM compiler $ vs
 
-sharedPrimitives :: [Val b] -> Map String String
-sharedPrimitives =
-    M.fromList
-  . flip zip (map (("_"++).show) [0::Int ..])
-  . M.keys
-  . M.filterWithKey (\a _ -> a /= "/*cast*/")
-  . M.unionsWith (+)
-  . map collect 
-  . reverse
-  . (Prim list:)
-  . (Prim comp:)
+type Id = Int
 
-konst :: String -> String
-konst k = "frp(" ++ k ++ ")"
+data Lang = D String | I String | A Id [Id] | C Id Id
+  deriving (Eq, Ord)
 
-list :: String
-list = "combine(Array.concat)"
+instance Show Lang where
+  show (D s)    = "frp(" ++ s ++ ")"
+  show (I s)    = s
+  show (A i xs) = "_" ++ show i ++ "(" ++ intercalate "," (map (\x -> "_" ++ show x) xs) ++ ")"
+  show (C a b)  = "C(_" ++ show a ++ ",_" ++ show b ++ ")"
 
-comp :: String
-comp = "function(a,b)function()a(b.apply(undefined, arguments))"
+-- Common sub-expression elimination.
 
-collect :: Val b -> Map String Int
-collect (App f s)  = M.unionWith  (+) (collect f) (collect s)
-collect (Comb xs)  = M.unionsWith (+) (map collect xs)
-collect (Comp a f) = M.unionWith  (+) (collect a) (collect f)
-collect (Conn a b) = M.unionWith  (+) (collect a) (collect b)
-collect (Const c)  = M.singleton (konst c) 1
-collect (Prim a)   = M.singleton a 1
+type CSE a = StateT (Map Lang (Id, Int)) (StateT Id Identity) a
 
-builder :: Map String String -> Val b -> String
-builder e p@(App _ _) = fun e p ++ "(" ++ intercalate "," (args e p) ++ ")"
-builder e (Comb xs)   = maybe "fail" id (M.lookup list e) ++ "(" ++ intercalate "," (map (builder e) xs) ++ ")"
-builder e (Comp a f)  = maybe "fail" id (M.lookup comp e) ++ "(" ++ builder e a ++ "," ++ builder e f ++ ")"
-builder e (Conn a b)  = builder e a ++ "(" ++ builder e b ++ ")"
-builder e (Const c)   = let k = konst c in maybe k id (M.lookup k e)
-builder e (Prim a)    = maybe a id (M.lookup a e)
+cse :: Lang -> CSE Id
+cse lang =
+  do item <- gets (M.lookup lang)
+     case item of
+       Nothing ->
+         do f <- lift get
+            lift (modify (+1))
+            modify (M.insert lang (f, 1))
+            return f
+       Just (i, n) ->
+         do modify (M.insert lang (i, n+1))
+            return i
 
--- Flattening of curried function application.
+compiler :: Val a -> CSE Id
+compiler p@(App _ _) = (A <$> fun p                   <*> args p                ) >>= cse
+compiler (Comb xs)   = (A <$> compiler (Const "list") <*> mapM compiler xs      ) >>= cse
+compiler (Comp a f)  = (C <$> compiler a              <*> compiler f            ) >>= cse
+compiler (Conn a b)  = (A <$> compiler a              <*> (pure <$> compiler b) ) >>= cse
+compiler (Const c)   = return (D c)                                               >>= cse
+compiler (Prim a)    = return (I a)                                               >>= cse
 
-args :: Map String String -> Val b -> [String]
-args e (App f a) = args e f ++ [builder e a]
-args _ _         = []
+fun :: Val a -> CSE Id
+fun (App f _) = fun f
+fun a         = compiler a
 
-fun :: Map String String -> Val b -> String
-fun e (App f _) = fun e f
-fun e a         = builder e a
+args :: Val a -> CSE [Id]
+args (App f as) = (\xs x -> xs ++ [x]) <$> args f <*> compiler as
+args _          = return []
+
+use :: Id -> Map Id (Lang, Int) -> String
+use k m = 
+  case M.lookup k m of
+    Just (a, 1) -> showLang m a
+    Just (_, _) -> '_':show k
+    Nothing -> show "alert('compile error')"
+
+showLang :: Map Id (Lang, Int) -> Lang -> String
+showLang _ (D s)    = "frp(" ++ s ++ ")"
+showLang _ (I s)    = s
+showLang m (A i xs) = use i m ++ "(" ++ intercalate "," (map (\x -> use x m) xs) ++ ")"
+showLang m (C a b)  = "C(" ++ use a m ++ "," ++ use b m ++ ")"
+
+showRule :: Map Id (Lang, Int) -> (Lang, (Id, Int)) -> String
+showRule _ (I _,   (_, 1)) = ""
+showRule _ (D _,   (_, 1)) = ""
+showRule _ (C _ _, (_, 1)) = ""
+showRule k (l,     (_, 1)) = showLang k l
+showRule k (l,     (i, _)) = intercalate "" ["_", show i, "=", showLang k l]
 
