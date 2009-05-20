@@ -17,7 +17,8 @@ function frp (init, act)
       if (v == x.v) return
       x.v = v
       if (act) act.call(x)
-      x.reactors.map(function (r) { r.set(x.v) })
+      for (var i = 0; i < x.reactors.length; i++)
+        x.reactors[i].set(x.v);
     }
   init === undefined || x.set(init)
 
@@ -41,18 +42,22 @@ function $ (f)
   {
     var x = frp()
     x.func = f
-    x.sub = []
+    x.sub  = []
+    x.subv = []
 
     function make (x, i)
     {
       return function ()
       {
-        return x.set(x.func.apply(x, x.sub.map(function (s) {return s.v})))
+        x.subv[i] = this.v
+        return x.set(x.func.apply(x, x.subv));
+        // return x.set(x.func.apply(x, x.sub.map(function (s) {return s.v})))
       }
-     }
+    }
 
     for (var i = 0; i < arguments.length; i++)
       (x.sub[i] = frp(undefined, make(x, i)))(arguments[i])
+
     return x
   }
 }

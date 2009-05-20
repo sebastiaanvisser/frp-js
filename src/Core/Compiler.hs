@@ -26,7 +26,7 @@ runCompiler vs =
     swp (l, (i, n)) = (i, (l, n))
     rev = M.fromList . map swp . M.toList $ values
     values = snd . fst . runIdentity . flip runStateT 0
-           . flip runStateT M.empty . mapM compiler $ vs
+           . flip runStateT M.empty . mapM (compiler True) $ vs
 
 type Id = Int
 
@@ -41,54 +41,55 @@ instance Show Lang where
 
 -- Common sub-expression elimination.
 
-type CSE a = StateT (Map Lang (Id, Int)) (StateT Id Identity) a
+type CSE a = StateT (Map Lang (Id, (Int, Bool))) (StateT Id Identity) a
 
-cse :: Lang -> CSE Id
-cse lang =
+cse :: Bool -> Lang -> CSE Id
+cse t lang =
   do item <- gets (M.lookup lang)
      case item of
        Nothing ->
          do f <- lift get
             lift (modify (+1))
-            modify (M.insert lang (f, 1))
+            modify (M.insert lang (f, (1, t)))
             return f
-       Just (i, n) ->
-         do modify (M.insert lang (i, n+1))
+       Just (i, (n, t')) ->
+         do modify (M.insert lang (i, (n+1, t' || t)))
             return i
 
-compiler :: Val a -> CSE Id
-compiler p@(App _ _) = (A <$> fun p                   <*> args p                ) >>= cse
-compiler (Comb xs)   = (A <$> compiler (Const "list") <*> mapM compiler xs      ) >>= cse
-compiler (Comp a f)  = (C <$> compiler a              <*> compiler f            ) >>= cse
-compiler (Conn a b)  = (A <$> compiler a              <*> (pure <$> compiler b) ) >>= cse
-compiler (Const c)   = return (D c)                                               >>= cse
-compiler (Prim a)    = return (I a)                                               >>= cse
+compiler :: Bool -> Val a -> CSE Id
+compiler t p@(App _ _) = (A <$> fun p                         <*> args p                     ) >>= cse t
+compiler t (Comb xs)   = (A <$> compiler False (Const "list") <*> mapM (compiler False) xs   ) >>= cse t
+compiler t (Comp a f)  = (C <$> compiler False a              <*> compiler False f           ) >>= cse t
+compiler t (Conn a b)  = (A <$> compiler False a              <*> (pure <$> compiler False b)) >>= cse t
+compiler t (Const c)   = return (D c)                                                          >>= cse t
+compiler t (Prim a)    = return (I a)                                                          >>= cse t
 
 fun :: Val a -> CSE Id
 fun (App f _) = fun f
-fun a         = compiler a
+fun a         = compiler False a
 
 args :: Val a -> CSE [Id]
-args (App f as) = (\xs x -> xs ++ [x]) <$> args f <*> compiler as
+args (App f as) = (\xs x -> xs ++ [x]) <$> args f <*> compiler False as
 args _          = return []
 
-use :: Id -> Map Id (Lang, Int) -> String
+use :: Id -> Map Id (Lang, (Int, Bool)) -> String
 use k m = 
   case M.lookup k m of
-    Just (a, 1) -> showLang m a
-    Just (_, _) -> '_':show k
+    Just (a, (1, _)) -> showLang m a
+    Just (_, (_, _)) -> '_':show k
     Nothing -> show "alert('compile error')"
 
-showLang :: Map Id (Lang, Int) -> Lang -> String
+showLang :: Map Id (Lang, (Int, Bool)) -> Lang -> String
 showLang _ (D s)    = "frp(" ++ s ++ ")"
 showLang _ (I s)    = s
 showLang m (A i xs) = use i m ++ "(" ++ intercalate "," (map (\x -> use x m) xs) ++ ")"
 showLang m (C a b)  = "C(" ++ use a m ++ "," ++ use b m ++ ")"
 
-showRule :: Map Id (Lang, Int) -> (Lang, (Id, Int)) -> String
-showRule _ (I _,   (_, 1)) = ""
-showRule _ (D _,   (_, 1)) = ""
-showRule _ (C _ _, (_, 1)) = ""
-showRule k (l,     (_, 1)) = showLang k l
-showRule k (l,     (i, _)) = intercalate "" ["_", show i, "=", showLang k l]
+showRule :: Map Id (Lang, (Int, Bool)) -> (Lang, (Id, (Int, Bool))) -> String
+showRule _ (I _,   (_, (1, _    ))) = ""
+showRule _ (D _,   (_, (1, _    ))) = ""
+showRule _ (C _ _, (_, (1, _    ))) = ""
+showRule _ (_,     (_, (1, False))) = ""
+showRule k (l,     (_, (1, _    ))) = showLang k l
+showRule k (l,     (i, (_, _    ))) = intercalate "" ["_", show i, "=", showLang k l]
 
