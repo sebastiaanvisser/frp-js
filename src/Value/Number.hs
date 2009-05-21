@@ -18,35 +18,38 @@ instance Fractional (Val Number) where
   (/) = prim2 "$(function(a,b){return a/b})"
   fromRational = Const . show
 
-mod :: Number :->: Number :~>: Number
+mod :: Number :-> Number :~> Number
 mod = prim2 "$(function(a,b){return a%b})"
 
-max :: Number :->: Number :~>: Number
+max :: Number :-> Number :~> Number
 max = prim2 "$(Math.max)"
 
-min :: Number :->: Number :~>: Number
+min :: Number :-> Number :~> Number
 min = prim2 "$(Math.min)"
 
-sin :: Number :~>: Number
+sin :: Number :~> Number
 sin = prim "$(Math.sin)"
 
-cos :: Number :~>: Number
+cos :: Number :~> Number
 cos = prim "$(Math.cos)"
 
-sqrt :: Number :~>: Number
+sqrt :: Number :~> Number
 sqrt = prim "$(Math.sqrt)"
 
-infix  4 <:, <=:, >=:, >:
+floor :: Number :~> Number
+floor = prim "$(Math.floor)"
 
-(>:) :: Number :->: Number :~>: Boolean
-(>:) = prim2 "$(function(a,b){return a>b})"
+infix  4 <, <=, >=, >
 
-(>=:) :: Number :->: Number :~>: Boolean
-(>=:) = prim2 "$(function(a,b){return a>=b})"
+(>) :: Number :-> Number :~> Boolean
+(>) = prim2 "$(function(a,b){return a>b})"
 
-(<:) :: Number :->: Number :~>: Boolean
-(<:) = prim2 "$(function(a,b){return a<b})"
+(>=) :: Number :-> Number :~> Boolean
+(>=) = prim2 "$(function(a,b){return a>=b})"
 
-(<=:) :: Number :->: Number :~>: Boolean
-(<=:) = prim2 "$(function(a,b){return a<=b})"
+(<) :: Number :-> Number :~> Boolean
+(<) = prim2 "$(function(a,b){return a<b})"
+
+(<=) :: Number :-> Number :~> Boolean
+(<=) = prim2 "$(function(a,b){return a<=b})"
 

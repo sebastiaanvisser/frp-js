@@ -28,13 +28,16 @@ data Element a =
   | Window
 
 instance Geometry (Element t) where
-  left   i = property i ".style" "left"
-  top    i = property i ".style" "top"
-  width  i = property i ".style" "width"
-  height i = property i ".style" "height"
+  geometry i = Rect
+    { left   = property i ".style" "left"
+    , top    = property i ".style" "top"
+    , width  = property i ".style" "width"
+    , height = property i ".style" "height"
+    }
 
 instance Color (Element t) where
-  color i = property i ".style" "backgroundColor"
+  color   i = property i ".style" "backgroundColor"
+  opacity i = property i ".style" "opacity"
 
 instance Visible (Element t) where
   visible i = property i ".style" "display"

@@ -1,69 +1,80 @@
 {-# LANGUAGE FlexibleInstances, TypeOperators #-}
 module Property.Geometry where
 
-import Prelude hiding ((&&), (||), max, min, sqrt)
+import Prelude hiding ((&&), (||), max, min, sqrt, (<), (<=), (>), (>=))
 import Core.Val
 import Value.Number
 import Value.Boolean
 
-class Point a where
-  px :: a -> Val Number
-  py :: a -> Val Number
 
-instance Point (Val Number, Val Number) where
-  px = fst
-  py = snd
+data Point = Point 
+  { px :: Val Number
+  , py :: Val Number
+  }
+
+class Position a where
+  position :: a -> Point
+
+instance Position Point where
+  position = id
+
+data Rect = Rect
+  { left   :: Val Number
+  , top    :: Val Number
+  , width  :: Val Number
+  , height :: Val Number
+  }
 
 class Geometry a where
-  left   :: a -> Val Number
-  top    :: a -> Val Number
-  width  :: a -> Val Number
-  height :: a -> Val Number
+  geometry :: a -> Rect
 
-bottom :: Geometry a => a -> Val Number
+bottom :: Rect -> Val Number
 bottom a = top a + height a
 
-right :: Geometry a => a -> Val Number
+right :: Rect -> Val Number
 right a = left a + width a
 
-corners :: Geometry a => a -> [(Val Number, Val Number)]
+center :: Rect -> Point
+center a = Point (left a + width a / 2) (top a + height a / 2)
+
+corners :: Rect -> [Point]
 corners a = 
-  [ (left  a, top    a)
-  , (right a, top    a)
-  , (left  a, bottom a)
-  , (right a, bottom a)
+  [ Point (left  a) (top    a)
+  , Point (right a) (top    a)
+  , Point (left  a) (bottom a)
+  , Point (right a) (bottom a)
   ]
 
-geom :: Geometry a => (Val Number, Val Number, Val Number, Val Number) -> a -> FRP ()
-geom (a, b, c, d) o =
-  do left   o <~ a
-     top    o <~ b
-     width  o <~ c
-     height o <~ d
+setGeom :: Rect -> Rect -> FRP ()
+setGeom a b =
+  do left   a <~ left   b
+     top    a <~ top    b
+     width  a <~ width  b
+     height a <~ height b
 
-overlay :: (Geometry a, Geometry b) => a -> b -> Number :->: FRP ()
+overlay :: Rect -> Rect -> Val Number -> FRP ()
 overlay a b c =
   do left   a <~ left   b + c
      top    a <~ top    b + c
      width  a <~ width  b - c * 2
      height a <~ height b - c * 2
 
-inside :: (Point a, Geometry b) => a -> b -> Val Boolean
+inside :: Point -> Rect -> Val Boolean
 inside a b =
-     px a >=: left   b
-  && px a <=: right  b
-  && py a >=: top    b
-  && py a <=: bottom b
+     px a >= left   b
+  && px a <= right  b
+  && py a >= top    b
+  && py a <= bottom b
 
-collapse :: (Geometry a, Geometry b) => a -> b -> Val Boolean
+collapse :: Rect -> Rect -> Val Boolean
 collapse a b =
   let x = (left   a `max` left   b)
       y = (top    a `max` top    b)
       w = (right  a `min` right  b) - x 
       h = (bottom a `min` bottom b) - y 
-  in x >: 0 && y >: 0 && w >: 0 && h >: 0
+  in x > 0 && y > 0 && w > 0 && h > 0
 
-distance :: (Point a, Point b) => a -> b -> Val Number
+distance :: Point -> Point -> Val Number
 distance a b = sqrt
   ( (px a - px b) * (px a - px b)
   + (py a - py b) * (py a - py b)

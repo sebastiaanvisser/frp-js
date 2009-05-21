@@ -56,13 +56,16 @@ cse t lang =
          do modify (M.insert lang (i, (n+1, t' || t)))
             return i
 
+list :: String
+list = "$(Array.concat)"
+
 compiler :: Bool -> Val a -> CSE Id
-compiler t p@(App _ _) = (A <$> fun p                         <*> args p                     ) >>= cse t
-compiler t (Comb xs)   = (A <$> compiler False (Const "list") <*> mapM (compiler False) xs   ) >>= cse t
-compiler t (Comp a f)  = (C <$> compiler False a              <*> compiler False f           ) >>= cse t
-compiler t (Conn a b)  = (A <$> compiler False a              <*> (pure <$> compiler False b)) >>= cse t
-compiler t (Const c)   = return (D c)                                                          >>= cse t
-compiler t (Prim a)    = return (I a)                                                          >>= cse t
+compiler t p@(App _ _) = (A <$> fun p                       <*> args p                     ) >>= cse t
+compiler t (Comb xs)   = (A <$> compiler False (Prim  list) <*> mapM (compiler False) xs   ) >>= cse t
+compiler t (Comp a f)  = (C <$> compiler False a            <*> compiler False f           ) >>= cse t
+compiler t (Conn a b)  = (A <$> compiler False a            <*> (pure <$> compiler False b)) >>= cse t
+compiler t (Const c)   = return (D c)                                                        >>= cse t
+compiler t (Prim a)    = return (I a)                                                        >>= cse t
 
 fun :: Val a -> CSE Id
 fun (App f _) = fun f

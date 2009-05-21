@@ -19,6 +19,7 @@ function frp (init, act)
       if (act) act.call(x)
       for (var i = 0; i < x.reactors.length; i++)
         x.reactors[i].set(x.v);
+      return x
     }
   init === undefined || x.set(init)
 
@@ -51,7 +52,6 @@ function $ (f)
       {
         x.subv[i] = this.v
         return x.set(x.func.apply(x, x.subv));
-        // return x.set(x.func.apply(x, x.sub.map(function (s) {return s.v})))
       }
     }
 
@@ -63,20 +63,31 @@ function $ (f)
 }
 
 // Let changes on the input let the output alternate between the a's.
-// :: Val a -> Val [b] -> Val b
+// :: a :-> [b] :-> Val b
 
-function _switch (inp, a)
-{
-  return $(
-    function (b, c)
-    {
-      if (this.last !== b)
-        (this.i = this.i ? this.i + 1 : 1)
-      this.last = b
-      return c && c[this.i % c.length]
-    }
-  )(inp, a)
-}
+_switch = $(
+  function (b, c)
+  {
+    if (this.last !== b)
+      (this.i = this.i ? this.i + 1 : 1)
+    this.last = b
+    return c && c[this.i % c.length]
+  }
+)
+
+// True between a transition of false to true of `a' and a transistion from
+// false to true of `b`.
+// :: Bool :-> Bool :~> Bool
+
+fromto = $(
+  function (a, b)
+  {
+    var n = this.v
+    if (a === true) n = true
+    if (b === true) n = false
+    return n
+  }
+)
 
 // Make a object property output.
 
@@ -88,7 +99,12 @@ function property (o, p)
 function _event (o, p, ev)
 {
   var pr = property(o, p)
-  o[ev] = function () { return pr.set(o[p]) }
+  o[ev] =
+    function (e)
+    {
+      e.preventDefault;
+      return pr.set(o[p])
+    }
   return pr
 }
 

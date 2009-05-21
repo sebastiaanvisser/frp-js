@@ -30,18 +30,18 @@ data Val :: * -> * where
   Const :: String -> Val a
   Prim  :: String -> Val a
 
-infixr 1 :->:
-infixr 2 :~>:
-type a :->: b = Val a -> b
-type a :~>: b = Val a -> Val b
+infixr 1 :->
+infixr 2 :~>
+type a :-> b = Val a -> b
+type a :~> b = Val a -> Val b
 
-prim :: String -> a :~>: b
+prim :: String -> a :~> b
 prim f a = Prim f `App` a
 
-prim2 :: String -> a :->: b :~>: c
+prim2 :: String -> a :-> b :~> c
 prim2 f a b = Prim f `App` a `App` b
 
-prim3 :: String -> a :->: b :->: c :~>: d
+prim3 :: String -> a :-> b :-> c :~> d
 prim3 f a b c = Prim f `App` a `App` b `App` c
 
 instance Eq (Val a) where
@@ -58,7 +58,7 @@ type FRP a = StateT [Val ()] Identity a
 
 infixl 1 <~
 
-(<~) :: a :->: a :->: FRP ()
+(<~) :: a :-> a :-> FRP ()
 (<~) a b = modify (Conn a b:)
 
 -- Primitive conversions.
