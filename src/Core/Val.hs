@@ -20,29 +20,31 @@ data Number
 data Boolean
 data Text
 
+data Type = Fun | Con | In | Out | InOut | Cast
+  deriving (Eq, Ord, Show)
+
 -- Indexed FRP values.
 
 data Val :: * -> * where
   App   :: Val (a -> b) -> Val a -> Val b
   Comb  :: [Val a] -> Val (List a)
   Comp  :: Val a -> Val (a -> b) -> Val b
-  Conn  :: Val a -> Val a -> Val ()
-  Const :: String -> Val a
-  Prim  :: String -> Val a
+  Arr   :: Val a -> Val a -> Val ()
+  Prim  :: Type -> String -> String -> Val a
 
 infixr 1 :->
 infixr 2 :~>
 type a :-> b = Val a -> b
 type a :~> b = Val a -> Val b
 
-prim :: String -> a :~> b
-prim f a = Prim f `App` a
+prim :: Type -> String -> String -> a :~> b
+prim t q f a = Prim t q f `App` a
 
-prim2 :: String -> a :-> b :~> c
-prim2 f a b = Prim f `App` a `App` b
+prim2 :: Type -> String -> String -> a :-> b :~> c
+prim2 t q f a b = Prim t q f `App` a `App` b
 
-prim3 :: String -> a :-> b :-> c :~> d
-prim3 f a b c = Prim f `App` a `App` b `App` c
+prim3 :: Type -> String -> String -> a :-> b :-> c :~> d
+prim3 t q f a b c = Prim t q f `App` a `App` b `App` c
 
 instance Eq (Val a) where
   (==) = undefined
@@ -59,7 +61,10 @@ type FRP a = StateT [Val ()] Identity a
 infixl 1 <~
 
 (<~) :: a :-> a :-> FRP ()
-(<~) a b = modify (Conn a b:)
+(<~) a b = modify (Arr a b:)
+
+(<~>) :: a :-> a :-> FRP ()
+(<~>) a b = (a <~ b) >> (b <~ a)
 
 -- Primitive conversions.
 
@@ -67,7 +72,7 @@ class ToText a where
   text :: Val a -> Val Text
 
 instance ToText Text where
-  text = prim "/*cast*/"
+  text = prim Cast "cast" "/*cast*/"
 
 -- Lift constant values into nodes.
 
@@ -75,15 +80,15 @@ class Show a => Const a b | a -> b where
   con :: a -> Val b
 
 instance Const [Char] Text where
-  con s = Const (show s)
+  con s = Prim Con (show s) (show s)
 
 instance Const Int Number where
-  con i = Const (show i)
+  con i = Prim Con (show i) (show i)
 
 instance Const Float Number where
-  con i = Const (show i)
+  con i = Prim Con (show i) (show i)
 
 instance Const Bool Boolean where
-  con False = Const "false"
-  con True  = Const "true"
+  con False = Prim Con "T" "false"
+  con True  = Prim Con "F" "true"
 

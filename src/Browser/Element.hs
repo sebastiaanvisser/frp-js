@@ -13,10 +13,16 @@ getElem Document = "document"
 getElem Window   = "window"
 
 property :: Element t -> String -> String -> Val b
-property e s p = Prim $ concat ["property(", getElem e, s, ",'", p, "')"]
+property e s p = Prim Out (show e ++ s ++ "." ++ p) $ concat ["property(", getElem e, s, ",'", p, "')"]
+
+instance Show (Element a) where
+  show (ById s) = s
+  show Body     = "body"
+  show Document = "document"
+  show Window   = "window"
 
 event :: Element t -> String -> String -> String -> Val a
-event e s p ev = Prim $ concat ["_event(", getElem e, s, ",'", p, "','", ev, "')"]
+event e s p ev = Prim InOut (show e ++ s ++ "." ++ p) $ concat ["_event(", getElem e, s, ",'", p, "','", ev, "')"]
 
 -- DOM elements.
 
@@ -41,7 +47,7 @@ instance Color (Element t) where
 
 instance Visible (Element t) where
   visible i = property i ".style" "display"
-       `Comp` Prim "$(function(a){return a?'block':'hidden'})"
+       `Comp` Prim Fun "aap" "$(function(a){return a?'block':'hidden'})"
 
 instance TextVal (Element t) where
   textVal Document = property Document "" "title"

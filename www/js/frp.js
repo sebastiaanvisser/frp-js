@@ -2,6 +2,7 @@
 
 function frp (init, act)
 {
+  // Connector function.
   var x =
     function (src)
     {
@@ -10,18 +11,25 @@ function frp (init, act)
       return x
     }
 
-  x.reactors = []
-  x.set =
+  // Primitive set function.
+  x.set = 
     function (v)
     {
-      if (v == x.v) return
-      x.v = v
-      if (act) act.call(x)
-      for (var i = 0; i < x.reactors.length; i++)
+      if (v == x.v) return                        // Fixed point reached?
+      x.v = v                                     // Update node with new value.
+      if (act) act.call(x)                        // Real world side effect/
+      for (var i = 0; i < x.reactors.length; i++) // Notify all reactors.
         x.reactors[i].set(x.v);
-      return x
+      return x                                    // Return self for chaining.
     }
-  init === undefined || x.set(init)
+
+  // Primitive get function.
+  x.get = function () { return x.v }
+
+  x.reactors = []
+
+  // Initialize with default value.
+  x.set(init)
 
   return x
 }
@@ -60,6 +68,14 @@ function $ (f)
 
     return x
   }
+}
+
+function listify ()
+{
+  var tmp = []
+  for (var i = 0; i < arguments.length; i++)
+    tmp[i] = arguments[i]
+  return tmp
 }
 
 // Let changes on the input let the output alternate between the a's.

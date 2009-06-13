@@ -1,6 +1,9 @@
-div {
+.abs {
   position   : absolute;
   display    : none;
-  opacity    : 0.6;
 }
 
+input {
+  border     : none;
+  background : silver;
+}

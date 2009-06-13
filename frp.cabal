@@ -8,7 +8,7 @@ License-file:     LICENSE
 Author:           Sebastiaan Visser
 Maintainer:       sfvisser@cs.uu.nl
 Build-Type:       Simple
-Build-Depends:    base, monads-fd, transformers, network, salvia, salvia-extras, containers
+Build-Depends:    base, monads-fd, transformers, network, salvia, salvia-extras, containers, dotgen, process, fclabels, data-reify, data-reify-cse
 
 Executable:       frp
 GHC-Options:      -Wall -fno-warn-orphans

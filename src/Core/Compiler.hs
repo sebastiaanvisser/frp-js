@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs, RankNTypes #-}
 module Core.Compiler where
 
-{- TODO: cleanup a bit. -}
+{- TODO: cleanup `a bit'. -}
 
 import Control.Applicative hiding (Const)
 import Control.Monad.Identity
@@ -57,15 +57,15 @@ cse t lang =
             return i
 
 list :: String
-list = "$(Array.concat)"
+list = "$(listify)"
 
 compiler :: Bool -> Val a -> CSE Id
-compiler t p@(App _ _) = (A <$> fun p                       <*> args p                     ) >>= cse t
-compiler t (Comb xs)   = (A <$> compiler False (Prim  list) <*> mapM (compiler False) xs   ) >>= cse t
-compiler t (Comp a f)  = (C <$> compiler False a            <*> compiler False f           ) >>= cse t
-compiler t (Conn a b)  = (A <$> compiler False a            <*> (pure <$> compiler False b)) >>= cse t
-compiler t (Const c)   = return (D c)                                                        >>= cse t
-compiler t (Prim a)    = return (I a)                                                        >>= cse t
+compiler t p@(App _ _)    = (A <$> fun p                       <*> args p                     ) >>= cse t
+compiler t (Comb xs)      = (A <$> compiler False (Prim Fun "list" list) <*> mapM (compiler False) xs   ) >>= cse t
+compiler t (Comp a f)     = (C <$> compiler False a            <*> compiler False f           ) >>= cse t
+compiler t (Arr a b)      = (A <$> compiler False a            <*> (pure <$> compiler False b)) >>= cse t
+compiler t (Prim Con _ a) = return (D a)                                                        >>= cse t
+compiler t (Prim _   _ a) = return (I a)                                                        >>= cse t
 
 fun :: Val a -> CSE Id
 fun (App f _) = fun f
