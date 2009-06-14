@@ -1,13 +1,11 @@
 module Main where
 
-import Control.Monad.State
 import Control.Concurrent
+import Control.Monad.State
 import Core.Compiler
-import Core.NewCompiler
 import Core.Dot
 import Core.Val
 import Data.Record.Label
-import Demo
 import Network.Protocol.Http
 import Network.Salvia.Handler.ExtendedFileSystem
 import Network.Salvia.Handlers
@@ -15,6 +13,8 @@ import Network.Salvia.Httpd
 import Network.Socket
 import System.IO
 import System.Process
+import qualified Demo1 as Demo1
+import qualified Demo2 as Demo2
 
 main :: IO ()
 main = do
@@ -25,16 +25,15 @@ main = do
     (hDefaultEnv root)
 
 root :: Handler ()
-root =
-    hPath "/www/demo.js"     (hFrp2 demo)
-  $ hPath "/www/demo.png"    (hDot demo)
-  $ hExtendedFileSystem "."
+root = hPathRouter
+  [ ("/www/demo1/demo.js",  hFrp Demo1.demo)
+  , ("/www/demo1/demo.png", hDot Demo1.demo)
+  , ("/www/demo2/demo.js",  hFrp Demo2.demo)
+  , ("/www/demo2/demo.png", hDot Demo2.demo)
+  ] $ hExtendedFileSystem "."
 
 hFrp :: FRP () -> Handler ()
-hFrp = sendStrLn . compile
-
-hFrp2 :: FRP () -> Handler ()
-hFrp2 s = liftIO (compiler1 s) >>= sendStrLn
+hFrp s = liftIO (compiler s) >>= sendStrLn
 
 hDot :: FRP () -> Handler ()
 hDot frp = 
@@ -43,6 +42,6 @@ hDot frp =
        setM contentType ("image/png", Nothing)
        setM status OK
      (i, o, _, _) <- liftIO (runInteractiveProcess "dot" ["-Tpng"] Nothing Nothing)
-     lift $ forkIO (hPutStrLn i dot >> hClose i)
+     liftIO $ forkIO (hPutStrLn i dot >> hClose i)
      spoolBs id o
 
